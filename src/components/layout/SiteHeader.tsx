@@ -33,7 +33,7 @@ export default function SiteHeader({ locale, dictionary, resumeLink }: SiteHeade
   function closeMenu() { setMenuOpen(false); }
   function rememberLocale() { localStorage.setItem("portfolio-locale", alternateLocale); const secure = window.location.protocol === "https:" ? "; Secure" : ""; document.cookie = `portfolio-locale=${alternateLocale}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`; }
 
-  return <header className="sticky top-0 z-50 border-b border-border bg-bg-page/85 backdrop-blur-xl supports-[backdrop-filter]:bg-bg-page/70">
+  return <header className="sticky top-0 z-50 border-b border-accent/20 bg-bg-page/40 backdrop-blur-xl shadow-[0_4px_30px_color-mix(in_srgb,var(--accent)_8%,transparent)] supports-[backdrop-filter]:bg-bg-page/30 transition-all duration-300 hover:bg-bg-page/50">
     <Container className="flex min-h-[4.5rem] items-center justify-between gap-3">
       <Link href={`/${locale}`} className="group inline-flex min-h-11 items-center gap-3 rounded-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label={`${siteConfig.name} — ${dictionary.nav.home}`}>
         <span className="grid size-9 place-items-center border border-border-strong bg-surface text-xs font-bold tracking-[.12em] text-accent transition-transform duration-200 group-hover:-rotate-3">AN</span>

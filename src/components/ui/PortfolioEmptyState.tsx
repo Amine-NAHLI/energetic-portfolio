@@ -25,10 +25,13 @@ export default function PortfolioEmptyState({ collection, locale, className }: {
   const copy = emptyCopy[locale][collection];
 
   return (
-    <TechnicalFrame as="section" index="00" label={locale === "fr" ? "Dossier public" : "Public record"} className={`p-7 text-center sm:p-10 ${className ?? ""}`}>
-      <Inbox aria-hidden="true" className="mx-auto size-6 text-accent" />
-      <h2 className="mt-4 text-xl font-semibold text-text-primary">{copy.title}</h2>
-      <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-text-secondary">{copy.description}</p>
+    <TechnicalFrame as="section" index="00" label={locale === "fr" ? "Module en attente" : "Module standby"} className={`group relative overflow-hidden bg-surface-subtle/50 p-8 text-center backdrop-blur-md sm:p-14 ${className ?? ""}`}>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,color-mix(in_srgb,var(--accent)_12%,transparent),transparent_60%)] opacity-0 transition-opacity duration-700 group-hover:opacity-100" />
+      <div className="relative mx-auto flex size-16 items-center justify-center rounded-full border border-accent/40 bg-surface/60 shadow-[0_0_20px_color-mix(in_srgb,var(--accent)_20%,transparent)]">
+        <Inbox aria-hidden="true" className="size-7 animate-pulse text-accent" />
+      </div>
+      <h2 className="relative mt-5 font-display text-xl font-semibold tracking-wide text-text-primary">{copy.title}</h2>
+      <p className="relative mx-auto mt-3 max-w-md text-[.85rem] leading-relaxed text-text-secondary">{copy.description}</p>
     </TechnicalFrame>
   );
 }

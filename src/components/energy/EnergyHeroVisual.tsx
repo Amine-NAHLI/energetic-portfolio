@@ -16,7 +16,7 @@ export default function EnergyHeroVisual({ locale }: { locale: Locale }) {
   const reduceMotion = useReducedMotion();
 
   return (
-    <figure className="energy-hero-visual relative min-h-[22rem] overflow-hidden border border-border bg-surface shadow-[0_2rem_6rem_rgba(0,10,15,.28)] sm:min-h-[37rem] lg:min-h-[44rem]">
+    <figure className="group energy-hero-visual relative min-h-[22rem] overflow-hidden border border-border bg-surface shadow-[0_2rem_6rem_rgba(0,10,15,.28)] transition-all duration-700 hover:border-accent/40 hover:shadow-[0_2rem_8rem_color-mix(in_srgb,var(--accent)_15%,transparent)] sm:min-h-[37rem] lg:min-h-[44rem]">
       <Image
         src="/energy-system-hero.png"
         alt={locale === "fr" ? "Installation hybride associant panneaux photovoltaïques, éolienne, stockage et poste électrique" : "Hybrid installation combining solar panels, a wind turbine, storage and an electrical substation"}
@@ -26,7 +26,7 @@ export default function EnergyHeroVisual({ locale }: { locale: Locale }) {
         sizes="(max-width: 1024px) 100vw, 50vw"
       />
       <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-[#041117]/85 via-transparent to-[#041117]/10" />
-      <div aria-hidden="true" className="absolute inset-4 border border-white/15 sm:inset-6" />
+      <div aria-hidden="true" className="absolute inset-4 border border-white/15 transition-colors duration-500 group-hover:border-accent/40 sm:inset-6" />
       <div aria-hidden="true" className="absolute inset-x-8 top-8 hidden h-28 sm:block">
         <svg viewBox="0 0 560 120" className="size-full overflow-visible" preserveAspectRatio="none">
           <defs>
@@ -61,7 +61,7 @@ export default function EnergyHeroVisual({ locale }: { locale: Locale }) {
           ))}
         </svg>
       </div>
-      <div className="absolute right-4 top-4 flex items-center gap-3 border border-white/20 bg-[#041117]/82 p-2 pr-3 text-white backdrop-blur-md sm:right-6 sm:top-6">
+      <div className="absolute right-4 top-4 flex items-center gap-3 border border-white/20 bg-[#041117]/82 p-2 pr-3 text-white backdrop-blur-md transition-colors duration-500 group-hover:border-accent/40 group-hover:bg-[#041117]/90 sm:right-6 sm:top-6">
         <div className="relative size-11 overflow-hidden border border-white/20 sm:size-12">
           <Image src="/nahli.png" alt="" fill className="object-cover" sizes="48px" />
         </div>
