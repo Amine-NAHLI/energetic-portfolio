@@ -35,16 +35,12 @@ export type ProjectRow = Timestamped & {
   source_kind: "academic" | "personal" | "professional" | "open_source";
   publication_status: WorkflowStatus;
   featured: boolean;
-  categories: string[];
-  sort_order: number;
-  github_url: string | null;
-  demo_url: string | null;
+  gallery: string[] | null;
   repository_full_name: string | null;
   primary_language: string | null;
   published_at: string | null;
   created_by: string | null;
   updated_by: string | null;
-  technologies: string[];
   core_technologies: string[];
 };
 

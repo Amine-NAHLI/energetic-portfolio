@@ -5,9 +5,8 @@ import { hasSupabasePublicConfig } from "@/lib/env/supabase";
 import { createPublicClient } from "@/lib/supabase/public";
 import type { Locale } from "@/i18n/config";
 import type { Json } from "@/types/database";
-import type { PortfolioProject, ProjectCategory } from "@/types/content";
+import type { PortfolioProject } from "@/types/content";
 
-const allowedCategories = new Set<ProjectCategory>(["software", "cybersecurity", "artificial-intelligence", "embedded"]);
 
 async function queryPublishedProjects(locale: Locale): Promise<PortfolioProject[]> {
   if (!hasSupabasePublicConfig()) return [];
@@ -15,7 +14,7 @@ async function queryPublishedProjects(locale: Locale): Promise<PortfolioProject[
 
   try {
     const [projectsResult, translationsResult, mediaResult] = await Promise.all([
-      supabase.from("projects").select("*").order("sort_order", { ascending: true }).order("published_at", { ascending: false }),
+      supabase.from("projects").select("*").order("featured", { ascending: false }).order("published_at", { ascending: false }),
       supabase.from("project_translations").select("*").eq("review_status", "validated"),
       supabase.from("project_media").select("project_id, sort_order, media_assets(storage_path)").order("sort_order", { ascending: true }),
     ] as const);
@@ -51,9 +50,6 @@ async function queryPublishedProjects(locale: Locale): Promise<PortfolioProject[
       const selected = translations?.get(locale);
       if (!french || !english || !selected || !french.problem || !english.problem || !french.solution || !english.solution) return [];
 
-      const technologies = Array.isArray(project.technologies) ? project.technologies.filter((t): t is string => typeof t === "string") : [];
-      if (technologies.length === 0 && project.primary_language) technologies.push(project.primary_language);
-
       return [{
         slug: project.slug,
         title: selected.title,
@@ -64,13 +60,9 @@ async function queryPublishedProjects(locale: Locale): Promise<PortfolioProject[
         solution: { fr: french.solution, en: english.solution },
         architecture: localizeArray(french.architecture, english.architecture),
         results: localizeArray(french.results, english.results),
-        technologies,
-        coreTechnologies: Array.isArray(project.core_technologies) && project.core_technologies.length > 0 ? project.core_technologies : technologies,
-        categories: project.categories.filter(isProjectCategory),
+        coreTechnologies: Array.isArray(project.core_technologies) && project.core_technologies.length > 0 ? project.core_technologies : (project.primary_language ? [project.primary_language] : []),
         featured: project.featured,
         coverImage: mediaByProject.get(project.id),
-        githubUrl: project.github_url ?? undefined,
-        demoUrl: project.demo_url ?? undefined,
       } satisfies PortfolioProject];
     });
     return projects;
@@ -87,10 +79,6 @@ function localizeArray(french: Json, english: Json): Array<Record<Locale, string
 
 function toStringArray(value: Json): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string" && item.trim().length > 0) : [];
-}
-
-function isProjectCategory(value: string): value is ProjectCategory {
-  return allowedCategories.has(value as ProjectCategory);
 }
 
 const getFrenchProjects = unstable_cache(() => queryPublishedProjects("fr"), ["published-projects-fr"], { revalidate: 900, tags: ["projects"] });

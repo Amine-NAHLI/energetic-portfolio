@@ -64,22 +64,13 @@ async function querySkills(locale: Locale): Promise<PublicSkillGroup[]> {
   if (!hasSupabasePublicConfig()) return [];
   try {
     const supabase = createPublicClient();
-    const [categoryResult, skillResult, projectResult] = await Promise.all([
+    const [categoryResult, skillResult] = await Promise.all([
       supabase.from("skill_categories").select("id, slug, name_fr, name_en, description_fr, description_en").order("sort_order"),
       supabase.from("skills").select("id, category_id, group_key, name, level").order("sort_order"),
-      supabase.from("projects").select("id, slug, technologies"),
     ]);
-    if (categoryResult.error || skillResult.error || projectResult.error) return [];
+    if (categoryResult.error || skillResult.error) return [];
     
     const evidenceBySkill = new Map<string, string[]>();
-    for (const project of projectResult.data ?? []) {
-      const techs = Array.isArray(project.technologies) ? project.technologies.filter((t): t is string => typeof t === "string") : [];
-      for (const skill of skillResult.data ?? []) {
-        if (techs.some((t) => t.toLowerCase() === skill.name.toLowerCase())) {
-          evidenceBySkill.set(skill.id, [...(evidenceBySkill.get(skill.id) ?? []), project.slug]);
-        }
-      }
-    }
     const skillsByCategory = new Map<string, PublicSkill[]>();
     for (const skill of skillResult.data ?? []) {
       const category = skill.category_id ?? skill.group_key;
@@ -132,7 +123,7 @@ async function queryCertificates(locale: Locale): Promise<PublicCertification[]>
   } catch { return []; }
 }
 
-async function queryTestimonials(_locale: Locale): Promise<PublicTestimonial[]> {
+async function queryTestimonials(): Promise<PublicTestimonial[]> {
   if (!hasSupabasePublicConfig()) return [];
   try {
     const { data, error } = await createPublicClient().from("testimonials").select("id, first_name, last_name, job_title, organization, message, rating, locale, featured").eq("status", "approved").order("featured", { ascending: false }).order("created_at", { ascending: false });
@@ -147,8 +138,8 @@ const skillsFr = unstable_cache(() => querySkills("fr"), ["portfolio-skills-fr"]
 const skillsEn = unstable_cache(() => querySkills("en"), ["portfolio-skills-en"], { revalidate: 900, tags: ["portfolio"] });
 const certificatesFr = unstable_cache(() => queryCertificates("fr"), ["portfolio-certificates-fr"], { revalidate: 900, tags: ["portfolio"] });
 const certificatesEn = unstable_cache(() => queryCertificates("en"), ["portfolio-certificates-en"], { revalidate: 900, tags: ["portfolio"] });
-const testimonialsFr = unstable_cache(() => queryTestimonials("fr"), ["portfolio-testimonials-fr"], { revalidate: 900, tags: ["portfolio"] });
-const testimonialsEn = unstable_cache(() => queryTestimonials("en"), ["portfolio-testimonials-en"], { revalidate: 900, tags: ["portfolio"] });
+const testimonialsFr = unstable_cache(() => queryTestimonials(), ["portfolio-testimonials-fr"], { revalidate: 900, tags: ["portfolio"] });
+const testimonialsEn = unstable_cache(() => queryTestimonials(), ["portfolio-testimonials-en"], { revalidate: 900, tags: ["portfolio"] });
 
 async function queryContactLinks() {
   if (!hasSupabasePublicConfig()) return siteConfig.links;
@@ -158,9 +149,10 @@ async function queryContactLinks() {
     const dbLinks = data.value as Record<string, string>;
     return {
       ...siteConfig.links,
-      github: dbLinks.github || siteConfig.links.github,
+
       linkedin: dbLinks.linkedin || siteConfig.links.linkedin,
       email: dbLinks.email ? `mailto:${dbLinks.email}` : siteConfig.links.email,
+      cvMediaId: dbLinks.cv_media_id,
     };
   } catch {
     return siteConfig.links;

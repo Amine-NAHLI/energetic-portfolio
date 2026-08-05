@@ -14,13 +14,9 @@ export type PortfolioProject = {
   solution: LocalizedText;
   architecture: LocalizedText[];
   results: LocalizedText[];
-  technologies: string[];
   coreTechnologies?: string[];
-  categories: ProjectCategory[];
   featured: boolean;
   coverImage?: string;
-  githubUrl?: string;
-  demoUrl?: string;
 };
 
 export type SkillGroup = {

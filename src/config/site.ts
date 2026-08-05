@@ -1,12 +1,10 @@
 export const siteConfig = {
   name: "Zouhour Bougriane",
-  githubUsername: "Amine-NAHLI",
   location: {
     fr: "Fès, Maroc",
     en: "Fez, Morocco",
   },
   links: {
-    github: "https://github.com/Amine-NAHLI",
     linkedin: "https://www.linkedin.com/in/amine-nahli-48b2a734b/",
     tryHackMe: "https://tryhackme.com/p/nahliAmine",
     email: "mailto:nahli-ami@upf.ac.ma",
