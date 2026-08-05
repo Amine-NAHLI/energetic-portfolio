@@ -5,8 +5,7 @@ export const siteConfig = {
     en: "Fez, Morocco",
   },
   links: {
-    linkedin: "https://www.linkedin.com/in/amine-nahli-48b2a734b/",
-    tryHackMe: "https://tryhackme.com/p/nahliAmine",
+    linkedin: "https://www.linkedin.com/in/zouhour-bougriane-57788526a/",
     email: "mailto:nahli-ami@upf.ac.ma",
     resume: "/cv",
   },

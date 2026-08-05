@@ -67,7 +67,7 @@ export default async function HomePage({ params }: HomePageProps) {
       <JsonLd data={{
         "@context": "https://schema.org",
         "@graph": [
-          { "@type": "Person", "@id": new URL("/#person", getSiteUrl()).toString(), name: siteConfig.name, url: new URL(`/${locale}`, getSiteUrl()).toString(), homeLocation: siteConfig.location[locale], sameAs: [contactLinks.linkedin, ("tryHackMe" in contactLinks ? (contactLinks as Record<string, string>).tryHackMe : undefined)].filter(Boolean), alumniOf: { "@type": "CollegeOrUniversity", name: "Université Privée de Fès" } },
+          { "@type": "Person", "@id": new URL("/#person", getSiteUrl()).toString(), name: siteConfig.name, url: new URL(`/${locale}`, getSiteUrl()).toString(), homeLocation: siteConfig.location[locale], sameAs: [contactLinks.linkedin].filter(Boolean), alumniOf: { "@type": "CollegeOrUniversity", name: "Université Privée de Fès" } },
           { "@type": "WebSite", name: `${siteConfig.name} — Portfolio`, url: getSiteUrl().toString(), inLanguage: locale, author: { "@id": new URL("/#person", getSiteUrl()).toString() } },
         ],
       }} />
