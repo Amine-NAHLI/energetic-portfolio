@@ -33,15 +33,19 @@ export default function SiteHeader({ locale, dictionary, resumeLink }: SiteHeade
   function closeMenu() { setMenuOpen(false); }
   function rememberLocale() { localStorage.setItem("portfolio-locale", alternateLocale); const secure = window.location.protocol === "https:" ? "; Secure" : ""; document.cookie = `portfolio-locale=${alternateLocale}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`; }
 
-  return <header className="sticky top-0 z-50 border-b border-accent/20 bg-bg-page/40 backdrop-blur-xl shadow-[0_4px_30px_color-mix(in_srgb,var(--accent)_8%,transparent)] supports-[backdrop-filter]:bg-bg-page/30 transition-all duration-300 hover:bg-bg-page/50">
+  return <header className="sticky top-0 z-50 energy-border-bottom bg-circuit-pattern bg-bg-page/50 backdrop-blur-xl shadow-[0_4px_30px_color-mix(in_srgb,var(--accent)_8%,transparent)] supports-[backdrop-filter]:bg-bg-page/40 transition-all duration-300 hover:bg-bg-page/60">
     <Container className="flex min-h-[4.5rem] items-center justify-between gap-3">
       <Link href={`/${locale}`} className="group inline-flex min-h-11 items-center gap-3 rounded-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label={`${siteConfig.name} — ${dictionary.nav.home}`}>
-        <span className="grid size-9 place-items-center border border-border-strong bg-surface text-xs font-bold tracking-[.12em] text-accent transition-transform duration-200 group-hover:-rotate-3">AN</span>
-        <span className="hidden text-sm font-semibold tracking-tight sm:block">{siteConfig.name}</span>
+        <span className="grid size-9 place-items-center border border-border-strong bg-surface text-xs font-bold tracking-[.12em] text-accent transition-all duration-300 group-hover:-rotate-3 group-hover:bg-accent group-hover:text-text-on-accent group-hover:shadow-[0_0_15px_color-mix(in_srgb,var(--accent)_60%,transparent)]">AN</span>
+        <span className="hidden text-sm font-semibold tracking-tight transition-colors group-hover:text-accent sm:block">{siteConfig.name}</span>
       </Link>
-      <nav className="hidden items-center gap-1 xl:flex" aria-label={dictionary.navigationLabel}>{navigation.map((item) => {
+      <nav className="hidden items-center gap-2 xl:flex" aria-label={dictionary.navigationLabel}>{navigation.map((item) => {
         const active = item.href === `/${locale}` ? pathname === item.href : pathname.startsWith(item.href);
-        return <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={cn("relative px-3 py-2 text-[.76rem] font-semibold tracking-[.02em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px after:origin-left after:bg-accent after:transition-transform", active ? "text-text-primary after:scale-x-100" : "text-text-secondary hover:text-text-primary after:scale-x-0")}>{item.label}</Link>;
+        return <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={cn("group relative px-4 py-2 text-[.76rem] font-semibold tracking-[.02em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent", active ? "text-accent" : "text-text-secondary hover:text-text-primary")}>
+          <span className="relative z-10">{item.label}</span>
+          <span className={cn("absolute -top-1 left-1/2 -translate-x-1/2 size-1.5 rounded-full bg-accent transition-all duration-300", active ? "opacity-100 shadow-[0_0_8px_var(--accent)]" : "opacity-0 group-hover:opacity-100 group-hover:shadow-[0_0_8px_var(--accent)]")} />
+          <span className={cn("absolute bottom-0 left-2 right-2 h-[2px] bg-accent transition-all duration-300 origin-left", active ? "scale-x-100 shadow-[0_-2px_10px_var(--accent)]" : "scale-x-0 group-hover:scale-x-100 opacity-50")} />
+        </Link>;
       })}</nav>
       <div className="flex items-center gap-1.5">
         <ThemeToggle />

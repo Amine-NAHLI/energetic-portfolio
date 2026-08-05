@@ -27,7 +27,9 @@ export function PageLoadWrapper({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <AnimatePresence>{isLoading ? <motion.div className="pointer-events-auto fixed inset-0 z-[99999]" initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={reduceMotion ? { duration: 0 } : { duration: .45 }}><GlobalLoader /></motion.div> : null}</AnimatePresence>
+      <AnimatePresence>
+        {isLoading ? <GlobalLoader key="loader" /> : null}
+      </AnimatePresence>
       {children}
     </>
   );

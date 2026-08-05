@@ -21,7 +21,7 @@ export default function TechnicalFrame({
   return (
     <Component 
       className={cn(
-        "technical-frame relative overflow-hidden",
+        "group technical-frame relative overflow-hidden",
         `technical-frame--${tone}`, 
         className
       )}
@@ -31,6 +31,9 @@ export default function TechnicalFrame({
       <div className="relative z-10">{children}</div>
       <span className="technical-frame__node technical-frame__node--start" aria-hidden="true" />
       <span className="technical-frame__node technical-frame__node--end" aria-hidden="true" />
+      {tone !== "quiet" ? (
+        <span className="absolute left-0 right-0 h-[2px] bg-accent opacity-0 shadow-[0_0_15px_var(--accent)] group-hover:animate-[scan-laser_1.8s_ease-in-out_infinite] pointer-events-none z-20" aria-hidden="true" />
+      ) : null}
     </Component>
   );
 }
