@@ -34,16 +34,21 @@ export default async function ContactPage({ params }: ContactPageProps) {
     <>
       <PageIntro eyebrow={copy.eyebrow} title={copy.title} description={copy.description} />
       <Container className="py-12 sm:py-16 lg:py-20">
-        <div className="grid gap-5 md:grid-cols-3">
-          {links.map(({ label, value, href, icon: Icon, external }) => (
-            <a key={href} href={href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined} data-analytics-event={href === contactLinks.github ? "github_click" : undefined} className="technical-frame group flex min-h-48 flex-col p-6 transition-[border-color,transform] hover:-translate-y-0.5 hover:border-border-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
-              <Icon aria-hidden="true" className="size-6 text-accent" />
-              <span className="mt-auto pt-8 text-sm font-semibold text-text-primary">{label}</span>
-              <span className="mt-1 flex items-center gap-1 break-all text-sm text-text-muted">{value}{external ? <ArrowUpRight aria-hidden="true" className="size-3.5 shrink-0" /> : null}</span>
-            </a>
-          ))}
+        <div className="grid gap-10 lg:grid-cols-[.7fr_1.3fr] lg:gap-14">
+          <aside className="engineering-surface border-t-2 border-accent bg-surface p-6 sm:p-8">
+            <p className="font-mono text-[.65rem] font-semibold uppercase tracking-[.12em] text-text-muted">{locale === "fr" ? "Coordonnées" : "Contact details"}</p>
+            <div className="mt-6 grid">
+              {links.map(({ label, value, href, icon: Icon, external }) => (
+                <a key={href} href={href} target={external ? "_blank" : undefined} rel={external ? "noreferrer" : undefined} data-analytics-event={href === contactLinks.github ? "github_click" : undefined} className="group grid grid-cols-[2.5rem_1fr_auto] items-center gap-3 border-b border-border py-5 first:border-t transition-colors hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                  <Icon aria-hidden="true" className="size-5 text-accent" />
+                  <span><span className="block text-xs font-semibold text-text-primary">{label}</span><span className="mt-1 block break-all text-xs text-text-muted">{value}</span></span>
+                  {external ? <ArrowUpRight aria-hidden="true" className="size-4 shrink-0 text-text-muted transition-colors group-hover:text-accent" /> : null}
+                </a>
+              ))}
+            </div>
+          </aside>
+          <ContactForm locale={locale} />
         </div>
-        <div className="mt-8"><ContactForm locale={locale} /></div>
       </Container>
     </>
   );

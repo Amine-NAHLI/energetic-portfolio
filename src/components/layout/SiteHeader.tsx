@@ -22,8 +22,8 @@ export default function SiteHeader({ locale, dictionary, resumeLink }: SiteHeade
   const navigation = useMemo<NavigationItem[]>(() => [
     { label: dictionary.nav.home, href: `/${locale}#home` }, 
     { label: dictionary.nav.projects, href: `/${locale}#projects` },
-    { label: dictionary.nav.journey, href: `/${locale}#journey` }, 
-    { label: dictionary.nav.certifications, href: `/${locale}#certifications` }, 
+    { label: dictionary.nav.journey, href: `/${locale}#journey` },
+    { label: dictionary.nav.certifications, href: `/${locale}#certifications` },
     { label: dictionary.nav.testimonials, href: `/${locale}#testimonials` },
     { label: dictionary.nav.contact, href: `/${locale}#contact` },
   ], [dictionary, locale]);
@@ -37,17 +37,17 @@ export default function SiteHeader({ locale, dictionary, resumeLink }: SiteHeade
     <Container className="flex min-h-[4.5rem] items-center justify-between gap-3">
       <Link href={`/${locale}`} className="group inline-flex min-h-11 items-center gap-3 rounded-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label={`${siteConfig.name} — ${dictionary.nav.home}`}>
         <span className="grid size-9 place-items-center border border-border-strong bg-surface text-xs font-bold tracking-[.12em] text-accent transition-transform duration-200 group-hover:-rotate-3">AN</span>
-        <span className="hidden text-sm font-semibold tracking-tight sm:block">{siteConfig.name}<span className="ml-2 font-mono text-[.62rem] font-medium tracking-[.12em] text-text-muted">{"// 01"}</span></span>
+        <span className="hidden text-sm font-semibold tracking-tight sm:block">{siteConfig.name}</span>
       </Link>
       <nav className="hidden items-center gap-1 xl:flex" aria-label={dictionary.navigationLabel}>{navigation.map((item) => {
         const active = item.href === `/${locale}` ? pathname === item.href : pathname.startsWith(item.href);
-        return <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={cn("relative px-3 py-2 font-mono text-[.72rem] font-medium uppercase tracking-[.08em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px after:origin-left after:bg-accent after:transition-transform", active ? "text-text-primary after:scale-x-100" : "text-text-secondary hover:text-text-primary after:scale-x-0")}>{item.label}</Link>;
+        return <Link key={item.href} href={item.href} aria-current={active ? "page" : undefined} className={cn("relative px-3 py-2 text-[.76rem] font-semibold tracking-[.02em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent after:absolute after:bottom-0 after:left-3 after:right-3 after:h-px after:origin-left after:bg-accent after:transition-transform", active ? "text-text-primary after:scale-x-100" : "text-text-secondary hover:text-text-primary after:scale-x-0")}>{item.label}</Link>;
       })}</nav>
       <div className="flex items-center gap-1.5">
         <ThemeToggle />
         <Link href={`/${locale}/search`} className="inline-grid size-11 place-items-center rounded-sm text-text-secondary transition-colors hover:bg-surface-raised hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label={dictionary.nav.search}><Search aria-hidden="true" className="size-4" /></Link>
-        <Link href={alternatePath} hrefLang={alternateLocale} onClick={rememberLocale} data-analytics-event="language_change" className="inline-flex min-h-11 items-center gap-2 rounded-sm px-3 font-mono text-xs font-semibold uppercase tracking-[.08em] text-text-secondary transition-colors hover:bg-surface-raised hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label={dictionary.switchLanguage}><Languages aria-hidden="true" className="size-4" /><span>{alternateLocale}</span></Link>
-        <Link href={resumeLink} target="_blank" rel="noreferrer" data-analytics-event="cv_open" className="hidden min-h-11 items-center gap-1.5 rounded-sm border border-border-strong bg-surface px-4 font-mono text-xs font-semibold uppercase tracking-[.08em] text-text-primary transition-colors hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent lg:inline-flex">{dictionary.nav.resume}<ArrowUpRight aria-hidden="true" className="size-4" /></Link>
+        <Link href={alternatePath} hrefLang={alternateLocale} onClick={rememberLocale} data-analytics-event="language_change" className="inline-flex min-h-11 items-center gap-2 rounded-sm px-3 text-xs font-semibold uppercase tracking-[.06em] text-text-secondary transition-colors hover:bg-surface-raised hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label={dictionary.switchLanguage}><Languages aria-hidden="true" className="size-4" /><span>{alternateLocale}</span></Link>
+        <Link href={resumeLink} target="_blank" rel="noreferrer" data-analytics-event="cv_open" className="hidden min-h-11 items-center gap-1.5 rounded-sm border border-border-strong bg-surface px-4 text-xs font-semibold uppercase tracking-[.05em] text-text-primary transition-colors hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent lg:inline-flex">{dictionary.nav.resume}<ArrowUpRight aria-hidden="true" className="size-4" /></Link>
         <button type="button" className="inline-grid size-11 place-items-center rounded-sm border border-border text-text-primary transition-colors hover:bg-surface-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent xl:hidden" aria-label={dictionary.openMenu} aria-expanded={menuOpen} aria-controls="mobile-navigation" onClick={() => setMenuOpen(true)}><Menu aria-hidden="true" className="size-5" /></button>
       </div>
     </Container>

@@ -25,7 +25,7 @@ export default function PortfolioEmptyState({ collection, locale, className }: {
   const copy = emptyCopy[locale][collection];
 
   return (
-    <TechnicalFrame as="section" index="00" label="Content queue" className={`p-7 text-center sm:p-10 ${className ?? ""}`}>
+    <TechnicalFrame as="section" index="00" label={locale === "fr" ? "Dossier public" : "Public record"} className={`p-7 text-center sm:p-10 ${className ?? ""}`}>
       <Inbox aria-hidden="true" className="mx-auto size-6 text-accent" />
       <h2 className="mt-4 text-xl font-semibold text-text-primary">{copy.title}</h2>
       <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-text-secondary">{copy.description}</p>

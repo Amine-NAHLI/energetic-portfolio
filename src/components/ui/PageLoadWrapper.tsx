@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { GlobalLoader } from "./GlobalLoader";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 
 export function PageLoadWrapper({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     // If the document is already fully loaded
@@ -25,13 +27,7 @@ export function PageLoadWrapper({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <div 
-        className={`fixed inset-0 z-[99999] transition-opacity duration-700 pointer-events-none ${
-          isLoading ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        {isLoading && <div className="pointer-events-auto h-full w-full"><GlobalLoader /></div>}
-      </div>
+      <AnimatePresence>{isLoading ? <motion.div className="pointer-events-auto fixed inset-0 z-[99999]" initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={reduceMotion ? { duration: 0 } : { duration: .45 }}><GlobalLoader /></motion.div> : null}</AnimatePresence>
       {children}
     </>
   );

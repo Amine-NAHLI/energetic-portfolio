@@ -1,8 +1,4 @@
 /* eslint-disable @next/next/no-img-element */
-"use client";
-
-import { useState } from "react";
-
 // Mappage spécial pour les technos communes dont le nom diffère du slug attendu par skillicons.dev
 const customSlugs: Record<string, string> = {
   "next.js": "nextjs",
@@ -40,28 +36,8 @@ const customSlugs: Record<string, string> = {
 
 
 export default function SkillIcon({ name, className = "" }: { name: string; className?: string }) {
-  const [error, setError] = useState(false);
-
   const cleanName = name.toLowerCase().trim();
   const slug = customSlugs[cleanName] || cleanName.replace(/[^a-z0-9]/g, "");
-  
-  // Génère des couleurs pour le fallback en fonction du texte (toujours la même couleur pour un même texte)
-  const getColors = (str: string) => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const h = Math.abs(hash) % 360;
-    return {
-      bg: `hsl(${h}, 60%, 20%)`,
-      text: `hsl(${h}, 80%, 80%)`,
-    };
-  };
-
-  const firstLetter = name.charAt(0).toUpperCase();
-  const colors = getColors(name);
-
-  // Use our internal smart proxy API which handles fallbacks perfectly.
   const finalUrl = `/api/icon/${slug}`;
 
   return (
@@ -69,7 +45,8 @@ export default function SkillIcon({ name, className = "" }: { name: string; clas
       src={finalUrl} 
       alt={name}
       className={`shrink-0 object-contain ${className}`}
-      style={{ width: '1em', height: '1em', display: 'inline-block' }}
+      width={24}
+      height={24}
     />
   );
 }

@@ -92,7 +92,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         </a>
         <SiteHeader locale={candidate} dictionary={dictionary} resumeLink={contactLinks.resume} />
         <PrivacyAnalytics locale={candidate} />
-        <main id="main-content" className="page-enter flex-1" tabIndex={-1}>
+        <main id="main-content" className="flex-1" tabIndex={-1}>
           {children}
         </main>
         <SiteFooter locale={candidate} dictionary={dictionary} contactLinks={contactLinks} />

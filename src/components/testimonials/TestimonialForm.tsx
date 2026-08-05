@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
-import { MessageSquarePlus, X, Send, CheckCircle2 } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { CheckCircle2, MessageSquarePlus, Send, X } from "lucide-react";
 import { submitTestimonial } from "@/app/[locale]/testimonials/actions";
 import type { Locale } from "@/i18n/config";
 
@@ -11,186 +12,65 @@ export default function TestimonialForm({ locale, inline = false }: { locale: Lo
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<{ success?: boolean; error?: string; message?: string } | null>(null);
   const [mounted, setMounted] = useState(false);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const reduceMotion = useReducedMotion();
+  const copy = locale === "fr" ? {
+    title: "Votre avis compte", firstName: "Prénom *", lastName: "Nom *", role: "Rôle / Profession", roleHint: "ex : Professeur, ingénieur…", company: "Entreprise / École", message: "Votre avis *", submit: "Envoyer l’avis", trigger: inline ? "Rédiger un avis sur mon profil" : "Laisser un avis", close: "Fermer le formulaire",
+  } : {
+    title: "Your feedback matters", firstName: "First Name *", lastName: "Last Name *", role: "Role / Profession", roleHint: "e.g. Professor, engineer…", company: "Company / School", message: "Your Review *", submit: "Submit Review", trigger: inline ? "Write a review about me" : "Leave a review", close: "Close form",
+  };
 
+  useEffect(() => setMounted(true), []);
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (!isOpen) return;
+    const trigger = triggerRef.current;
+    closeButtonRef.current?.focus();
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setIsOpen(false);
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => { document.removeEventListener("keydown", handleKeyDown); trigger?.focus(); };
+  }, [isOpen]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
     formData.append("locale", locale);
-
     startTransition(async () => {
       try {
         const response = await submitTestimonial(null, formData);
         setResult(response);
-        if (response.success) {
-          setTimeout(() => {
-            setIsOpen(false);
-            setResult(null);
-          }, 3000);
-        }
+        if (response.success) window.setTimeout(() => { setIsOpen(false); setResult(null); }, 3000);
       } catch {
-        setResult({ success: false, error: "Une erreur s'est produite lors de la connexion au serveur." });
+        setResult({ success: false, error: locale === "fr" ? "Une erreur s’est produite lors de la connexion au serveur." : "A server connection error occurred." });
       }
     });
-  };
+  }
 
-  const formContent = (
-    <div className={`relative w-full max-w-lg overflow-hidden rounded-md border border-border bg-surface ${inline ? 'shadow-md' : 'shadow-2xl'} animate-in zoom-in-95`}>
-      <div className="flex items-center justify-between border-b border-border bg-surface-raised px-6 py-4">
-        <h3 className="font-display text-xl font-semibold text-text-primary">
-          {locale === "fr" ? "Votre avis compte" : "Your feedback matters"}
-        </h3>
-        <button
-          type="button"
-          onClick={() => setIsOpen(false)}
-          className="rounded-sm text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-        >
-          <X className="size-5" />
-        </button>
-      </div>
-
-      <div className="p-6">
-        {result?.success ? (
-          <div className="flex flex-col items-center justify-center py-8 text-center animate-in fade-in">
-            <CheckCircle2 className="size-16 text-success mb-4" />
-            <p className="text-lg font-medium text-text-primary">{result.message}</p>
+  const modal = mounted ? createPortal(
+    <AnimatePresence>
+      {isOpen ? <motion.div className="fixed inset-0 z-[100] grid place-items-center overflow-y-auto bg-[#031014]/82 p-4" role="dialog" aria-modal="true" aria-labelledby="testimonial-dialog-title" initial={reduceMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduceMotion ? 0 : .2 }} onMouseDown={(event) => { if (event.target === event.currentTarget) setIsOpen(false); }}>
+        <motion.div className="relative my-auto w-full max-w-lg border border-border bg-surface shadow-2xl" initial={reduceMotion ? false : { opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: reduceMotion ? 0 : .25, ease: [0.16, 1, 0.3, 1] }}>
+          <div className="flex items-center justify-between border-b border-border bg-surface-raised px-6 py-4"><h2 id="testimonial-dialog-title" className="font-display text-xl font-semibold text-text-primary">{copy.title}</h2><button ref={closeButtonRef} type="button" onClick={() => setIsOpen(false)} className="grid size-11 place-items-center border border-border text-text-secondary transition-colors hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label={copy.close}><X aria-hidden="true" className="size-5" /></button></div>
+          <div className="p-6">
+            {result?.success ? <div className="flex flex-col items-center justify-center py-8 text-center" role="status"><CheckCircle2 aria-hidden="true" className="mb-4 size-14 text-success" /><p className="text-lg font-medium text-text-primary">{result.message}</p></div> : <form onSubmit={handleSubmit} className="grid gap-5 text-left">
+              {result?.error ? <div className="border border-danger/50 bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">{result.error}</div> : null}
+              <div className="grid gap-5 sm:grid-cols-2"><Field id="firstName" name="firstName" label={copy.firstName} required /><Field id="lastName" name="lastName" label={copy.lastName} required /></div>
+              <div className="grid gap-5 sm:grid-cols-2"><Field id="role" name="role" label={copy.role} placeholder={copy.roleHint} /><Field id="company" name="company" label={copy.company} /></div>
+              <div className="grid gap-2"><label htmlFor="testimonial-message" className="text-xs font-semibold uppercase tracking-[.06em] text-text-secondary">{copy.message}</label><textarea id="testimonial-message" name="message" required rows={4} className="resize-y px-3 py-2 text-sm text-text-primary" /></div>
+              <button type="submit" disabled={isPending} className="button-primary mt-2 w-full disabled:cursor-not-allowed disabled:opacity-70">{isPending ? <motion.span aria-hidden="true" className="size-4 rounded-full border-2 border-text-on-accent border-r-transparent" animate={reduceMotion ? undefined : { rotate: 360 }} transition={{ duration: .8, repeat: Infinity, ease: "linear" }} /> : <Send aria-hidden="true" className="size-4" />}{copy.submit}</button>
+            </form>}
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="grid gap-5 text-left">
-            {result?.error && (
-              <div className="rounded-sm border border-danger/50 bg-danger/10 px-4 py-3 text-sm text-danger">
-                {result.error}
-              </div>
-            )}
+        </motion.div>
+      </motion.div> : null}
+    </AnimatePresence>, document.body,
+  ) : null;
 
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <label htmlFor="firstName" className="font-mono text-[10px] font-bold uppercase tracking-widest text-text-secondary">
-                  {locale === "fr" ? "Prénom *" : "First Name *"}
-                </label>
-                <input
-                  type="text"
-                  id="firstName"
-                  name="firstName"
-                  required
-                  className="rounded-sm border border-border bg-surface-deep px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
-                />
-              </div>
-              <div className="grid gap-2">
-                <label htmlFor="lastName" className="font-mono text-[10px] font-bold uppercase tracking-widest text-text-secondary">
-                  {locale === "fr" ? "Nom *" : "Last Name *"}
-                </label>
-                <input
-                  type="text"
-                  id="lastName"
-                  name="lastName"
-                  required
-                  className="rounded-sm border border-border bg-surface-deep px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
-                />
-              </div>
-            </div>
+  return <><button ref={triggerRef} type="button" onClick={() => setIsOpen(true)} className={inline ? "button-primary" : "fixed bottom-6 left-6 z-40 inline-flex min-h-11 items-center gap-2 rounded-md bg-accent px-5 py-3 text-xs font-bold text-text-on-accent shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"} aria-haspopup="dialog" aria-expanded={isOpen}><MessageSquarePlus aria-hidden="true" className="size-5" /><span className={inline ? "" : "hidden sm:inline"}>{copy.trigger}</span></button>{modal}</>;
+}
 
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <label htmlFor="role" className="font-mono text-[10px] font-bold uppercase tracking-widest text-text-secondary">
-                  {locale === "fr" ? "Rôle / Profession" : "Role / Profession"}
-                </label>
-                <input
-                  type="text"
-                  id="role"
-                  name="role"
-                  placeholder={locale === "fr" ? "ex: Professeur, Développeur..." : "e.g. Professor, Developer..."}
-                  className="rounded-sm border border-border bg-surface-deep px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
-                />
-              </div>
-              <div className="grid gap-2">
-                <label htmlFor="company" className="font-mono text-[10px] font-bold uppercase tracking-widest text-text-secondary">
-                  {locale === "fr" ? "Entreprise / École" : "Company / School"}
-                </label>
-                <input
-                  type="text"
-                  id="company"
-                  name="company"
-                  className="rounded-sm border border-border bg-surface-deep px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="grid gap-2">
-              <label htmlFor="message" className="font-mono text-[10px] font-bold uppercase tracking-widest text-text-secondary">
-                {locale === "fr" ? "Votre avis *" : "Your Review *"}
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                required
-                rows={4}
-                className="resize-none rounded-sm border border-border bg-surface-deep px-3 py-2 text-sm text-text-primary focus:border-accent focus:outline-none"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isPending}
-              className="button-primary mt-2 flex w-full items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-            >
-              {isPending ? (
-                <span className="size-4 animate-spin rounded-full border-2 border-text-on-accent border-r-transparent" />
-              ) : (
-                <Send className="size-4" />
-              )}
-              {locale === "fr" ? "Envoyer l'avis" : "Submit Review"}
-            </button>
-          </form>
-        )}
-      </div>
-    </div>
-  );
-
-  return (
-    <>
-      {inline ? (
-        <div className="relative flex flex-col">
-          <button
-            type="button"
-            onClick={() => setIsOpen(!isOpen)}
-            className="button-primary flex w-full sm:w-auto items-center justify-center gap-2"
-          >
-            <MessageSquarePlus className="size-4" />
-            {locale === "fr" ? "Rédiger un avis sur mon profil" : "Write a review about me"}
-          </button>
-          
-          {isOpen && mounted && createPortal(
-            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-surface/80 p-4 backdrop-blur-sm animate-in fade-in duration-200">
-              {formContent}
-            </div>,
-            document.body
-          )}
-        </div>
-      ) : (
-        <>
-          <button
-            type="button"
-            onClick={() => setIsOpen(!isOpen)}
-            className="fixed bottom-6 left-6 z-40 flex items-center gap-2 rounded-full bg-accent px-5 py-3 font-mono text-xs font-bold uppercase tracking-widest text-text-on-accent shadow-lg transition-transform hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-          >
-            <MessageSquarePlus className="size-5" />
-            <span className="hidden sm:inline">
-              {locale === "fr" ? "Laisser un avis" : "Leave a review"}
-            </span>
-          </button>
-
-          {isOpen && mounted && createPortal(
-            <div className="fixed bottom-24 left-6 z-50 origin-bottom-left animate-in slide-in-from-bottom-4 fade-in duration-200 shadow-2xl">
-              {formContent}
-            </div>,
-            document.body
-          )}
-        </>
-      )}
-    </>
-  );
+function Field({ id, name, label, required, placeholder }: { id: string; name: string; label: string; required?: boolean; placeholder?: string }) {
+  const fieldId = `testimonial-${id}`;
+  return <div className="grid gap-2"><label htmlFor={fieldId} className="text-xs font-semibold uppercase tracking-[.06em] text-text-secondary">{label}</label><input type="text" id={fieldId} name={name} required={required} placeholder={placeholder} className="px-3 py-2 text-sm text-text-primary" /></div>;
 }

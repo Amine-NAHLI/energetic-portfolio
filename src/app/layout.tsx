@@ -10,14 +10,11 @@ const themeScript = `try { var theme = localStorage.getItem('portfolio-theme'); 
 
 import { AdminAutoLogout } from "@/components/admin/AdminAutoLogout";
 
-import FluidBackground from "@/components/layout/FluidBackground";
-
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr" data-theme="dark" suppressHydrationWarning className={`${spaceGrotesk.variable} ${geist.variable} ${jetbrainsMono.variable}`}>
       <head><Script id="theme-preference" strategy="beforeInteractive">{themeScript}</Script></head>
       <body>
-        <FluidBackground />
         <AdminAutoLogout />
         {children}
       </body>

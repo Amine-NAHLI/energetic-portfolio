@@ -54,7 +54,7 @@ export default function ProjectExplorer({ locale, projects }: ProjectExplorerPro
 
   return (
     <div>
-      <div className="grid gap-4 border border-border bg-surface-subtle/70 p-4 sm:grid-cols-2 lg:grid-cols-[1fr_15rem_14rem] lg:p-5">
+      <div className="engineering-surface grid gap-4 border-y border-border bg-surface-subtle p-5 sm:grid-cols-2 lg:grid-cols-[1fr_15rem_14rem] lg:p-6">
         <label className="grid gap-2 text-sm font-medium text-text-primary">
           {copy.searchLabel}
           <span className="relative">
@@ -99,9 +99,9 @@ export default function ProjectExplorer({ locale, projects }: ProjectExplorerPro
       <p className="mt-6 text-sm text-text-muted" aria-live="polite">{copy.resultCount(visibleProjects.length)}</p>
 
       {visibleProjects.length > 0 ? (
-        <div className="mt-5 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-          {visibleProjects.map((project) => (
-            <ProjectSummaryCard key={project.slug} project={project} locale={locale} cta={copy.viewProject} />
+        <div className="mt-5 grid gap-6 md:grid-cols-2 xl:grid-cols-12">
+          {visibleProjects.map((project, index) => (
+            <div key={project.slug} className={index % 3 === 0 ? "xl:col-span-7" : "xl:col-span-5"}><ProjectSummaryCard project={project} locale={locale} cta={copy.viewProject} index={String(index + 1).padStart(2, "0")} /></div>
           ))}
         </div>
       ) : (

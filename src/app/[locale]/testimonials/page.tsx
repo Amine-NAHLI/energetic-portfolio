@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Container from "@/components/ui/Container";
 import PageIntro from "@/components/ui/PageIntro";
 import PortfolioEmptyState from "@/components/ui/PortfolioEmptyState";
-import TechnicalFrame from "@/components/ui/TechnicalFrame";
 import TestimonialForm from "@/components/testimonials/TestimonialForm";
 import { getPublicTestimonials } from "@/features/portfolio/data";
 import { isLocale } from "@/i18n/config";
@@ -37,19 +36,17 @@ export default async function TestimonialsPage({ params }: TestimonialsPageProps
       <Container className="py-12 sm:py-16 lg:py-20">
         <div className="editorial-shell py-1">
           {testimonials.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {testimonials.map((testimonial, index) => (
-                <TechnicalFrame 
+                <figure
                   key={testimonial.id} 
-                  index={String(index + 1).padStart(2, "0")} 
-                  label={locale === "fr" ? "Recommandation" : "Recommendation"} 
-                  className="p-6 flex flex-col"
+                  className="flex flex-col border-t-2 border-accent bg-surface p-6 sm:p-7"
                 >
-                  <Quote className="size-8 text-accent/40 mb-4" />
+                  <div className="flex items-center justify-between"><Quote aria-hidden="true" className="size-7 text-accent" /><span className="font-mono text-[.62rem] text-text-muted">{String(index + 1).padStart(2, "0")}</span></div>
                   <blockquote className="flex-1 text-base leading-relaxed text-text-secondary italic">
                     &quot;{testimonial.message}&quot;
                   </blockquote>
-                  <div className="mt-6 border-t border-border pt-4">
+                  <figcaption className="mt-6 border-t border-border pt-4">
                     <p className="font-display font-semibold text-text-primary">
                       {testimonial.name}
                     </p>
@@ -58,8 +55,8 @@ export default async function TestimonialsPage({ params }: TestimonialsPageProps
                         {[testimonial.role, testimonial.organization].filter(Boolean).join(" — ")}
                       </p>
                     )}
-                  </div>
-                </TechnicalFrame>
+                  </figcaption>
+                </figure>
               ))}
             </div>
           ) : (

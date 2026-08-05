@@ -76,8 +76,8 @@ export function ContactForm({ locale }: { locale: Locale }) {
   }
 
   return (
-    <section aria-labelledby="contact-form-title" className="technical-frame p-6 sm:p-8">
-      <p className="system-label">{"// Secure channel"}</p>
+    <section aria-labelledby="contact-form-title" className="border border-border bg-surface p-6 sm:p-8">
+      <p className="system-label">{locale === "fr" ? "Canal de contact" : "Contact channel"}</p>
       <h2 id="contact-form-title" className="text-2xl font-semibold">{copy.title}</h2>
       <p className="mt-2 text-sm leading-6 text-text-secondary">{copy.description}</p>
       <form ref={formRef} onSubmit={submit} className="mt-6 grid gap-5 sm:grid-cols-2">
@@ -90,7 +90,7 @@ export function ContactForm({ locale }: { locale: Locale }) {
           {error ? <p className="mb-4 rounded-xl border border-danger/30 bg-danger/10 p-4 text-sm text-danger" role="alert">{error}</p> : null}
           {success ? <p className="mb-4 flex items-center gap-2 rounded-xl border border-success/30 bg-success/10 p-4 text-sm text-success" role="status"><CheckCircle2 aria-hidden="true" className="size-5" />{copy.success}</p> : null}
           {notice ? <p className="mb-4 rounded-xl border border-warning/30 bg-warning/10 p-4 text-sm text-warning" role="status">{notice}</p> : null}
-          <button type="submit" className="button-primary w-full sm:w-auto" disabled={submitting}>{submitting ? <LoaderCircle aria-hidden="true" className="size-4 animate-spin motion-reduce:animate-none" /> : <Send aria-hidden="true" className="size-4" />}{submitting ? copy.sending : copy.submit}</button>
+          <button type="submit" className="button-primary w-full sm:w-auto" disabled={submitting}>{submitting ? <LoaderCircle aria-hidden="true" className="size-4" /> : <Send aria-hidden="true" className="size-4" />}{submitting ? copy.sending : copy.submit}</button>
           <p className="mt-4 max-w-2xl text-xs leading-5 text-text-muted">{copy.privacy}</p>
         </div>
       </form>
