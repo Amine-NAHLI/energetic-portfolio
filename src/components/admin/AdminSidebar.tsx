@@ -38,7 +38,7 @@ export function AdminSidebar() {
           AN
         </div>
         <div className="flex flex-col">
-          <span className="font-display text-text-primary leading-none tracking-tight">Amine Nahli</span>
+          <span className="font-display text-text-primary leading-none tracking-tight">Zouhour Bougriane</span>
           <span className="text-[10px] text-accent uppercase tracking-widest mt-1 font-mono">Portfolio Admin</span>
         </div>
       </div>

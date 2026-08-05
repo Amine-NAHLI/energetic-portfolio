@@ -63,7 +63,7 @@ export default function EnergyHeroVisual({ locale }: { locale: Locale }) {
       </div>
       <div className="absolute right-4 top-4 flex items-center gap-3 border border-white/20 bg-[#041117]/82 p-2 pr-3 text-white backdrop-blur-md transition-colors duration-500 group-hover:border-accent/40 group-hover:bg-[#041117]/90 sm:right-6 sm:top-6">
         <div className="relative size-11 overflow-hidden border border-white/20 sm:size-12">
-          <Image src="/nahli.png" alt="" fill className="object-cover" sizes="48px" />
+          <Image src="/zouhour.jpeg" alt="" fill className="object-cover object-[center_20%]" sizes="48px" />
         </div>
         <div>
           <p className="font-mono text-[.55rem] font-semibold uppercase tracking-[.14em] text-[#70d5a5]">{locale === "fr" ? "Profil ingénieur" : "Engineer profile"}</p>

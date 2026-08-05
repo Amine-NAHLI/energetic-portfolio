@@ -35,7 +35,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
   return (
     <>
-      <JsonLd data={{ "@context": "https://schema.org", "@type": "SoftwareSourceCode", name: project.title, description: project.summary[locale], programmingLanguage: project.technologies, url: new URL(`/${locale}/projects/${project.slug}`, getSiteUrl()).toString(), codeRepository: project.githubUrl, sameAs: [project.githubUrl, project.demoUrl].filter(Boolean), author: { "@type": "Person", name: "Amine Nahli" } }} />
+      <JsonLd data={{ "@context": "https://schema.org", "@type": "SoftwareSourceCode", name: project.title, description: project.summary[locale], programmingLanguage: project.technologies, url: new URL(`/${locale}/projects/${project.slug}`, getSiteUrl()).toString(), codeRepository: project.githubUrl, sameAs: [project.githubUrl, project.demoUrl].filter(Boolean), author: { "@type": "Person", name: "Zouhour Bougriane" } }} />
       <article>
         <header className="engineering-surface relative overflow-hidden border-b border-border py-12 sm:py-16 lg:py-20">
           <Container>
