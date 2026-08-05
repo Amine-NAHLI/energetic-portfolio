@@ -232,7 +232,7 @@
   animation: spin-slow 30s linear infinite;
 }
 .theme-flash {
-  animation: flash-power 0.4s ease-out forwards;
+  animation: flash-power 0.4s ease-out;
 }
 
 

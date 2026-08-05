@@ -29,6 +29,10 @@ export default function ThemeToggle() {
     document.body.classList.remove("theme-flash");
     void document.body.offsetWidth; // Trigger reflow
     document.body.classList.add("theme-flash");
+    
+    setTimeout(() => {
+      document.body.classList.remove("theme-flash");
+    }, 400);
   }
 
   // Prevent hydration mismatch by not rendering the icon until mounted
