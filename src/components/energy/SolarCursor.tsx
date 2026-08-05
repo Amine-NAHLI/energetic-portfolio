@@ -29,11 +29,11 @@ export default function SolarCursor() {
 
   return (
     <motion.div
-      className="pointer-events-none fixed left-0 top-0 z-[100] h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full dark:mix-blend-screen mix-blend-normal"
+      className="pointer-events-none fixed left-0 top-0 z-[100] h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full dark:mix-blend-screen mix-blend-multiply opacity-50 dark:opacity-100"
       style={{
         x: springX,
         y: springY,
-        background: "radial-gradient(circle, color-mix(in srgb, var(--amber) 25%, transparent) 0%, transparent 60%)",
+        background: "radial-gradient(circle, var(--accent) 0%, transparent 60%)",
       }}
     />
   );
