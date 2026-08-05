@@ -19,7 +19,7 @@ test("supports the principal public journey", async ({ page }) => {
   await page.goto("/fr");
   await Promise.all([
     page.waitForURL(/\/fr\/projects$/),
-    page.locator('header > div > nav a[href="/fr/projects"]').click(),
+    page.locator('main a[href="/fr/projects"]').first().click(),
   ]);
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
@@ -67,7 +67,7 @@ test("skip link exposes the main content target", async ({ page }) => {
   await expect(page.locator("#main-content")).toBeVisible();
 });
 
-for (const width of [320, 375, 425, 768, 1024, 1440, 1920]) {
+for (const width of [320, 375, 390, 425, 768, 1024, 1440, 1920]) {
   test(`has no horizontal page overflow at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/fr");
