@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowUpRight, Globe, Menu, Search, X } from "lucide-react";
+import { motion, useScroll, useSpring } from "framer-motion";
 import Container from "@/components/ui/Container";
 import ThemeToggle from "@/components/layout/ThemeToggle";
 import CvButton from "@/components/ui/CvButton";
@@ -19,6 +20,8 @@ export default function SiteHeader({ locale, dictionary, resumeLink, hasCv }: Si
   const pathname = usePathname() ?? `/${locale}`;
   const dialogRef = useRef<HTMLDialogElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
   const alternateLocale = getAlternateLocale(locale);
   const navigation = useMemo<NavigationItem[]>(() => [
     { label: dictionary.nav.home, href: `/${locale}#home` }, 
@@ -34,8 +37,12 @@ export default function SiteHeader({ locale, dictionary, resumeLink, hasCv }: Si
   function closeMenu() { setMenuOpen(false); }
   function rememberLocale() { localStorage.setItem("portfolio-locale", alternateLocale); const secure = window.location.protocol === "https:" ? "; Secure" : ""; document.cookie = `portfolio-locale=${alternateLocale}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`; }
 
-  return <header className="fixed left-1/2 top-4 z-50 w-[95%] max-w-5xl -translate-x-1/2 rounded-full border border-border/40 bg-surface/80 px-4 py-2 backdrop-blur-xl shadow-[0_8px_32px_color-mix(in_srgb,var(--accent)_15%,transparent)] supports-[backdrop-filter]:bg-surface/60 transition-all duration-300 hover:border-accent/40 hover:shadow-[0_8px_40px_color-mix(in_srgb,var(--amber)_25%,transparent)]">
-    <Container className="flex items-center justify-between gap-3 px-2 sm:px-4">
+  return <header className="fixed left-1/2 top-4 z-[100] w-[95%] max-w-5xl -translate-x-1/2 rounded-full border border-border/40 bg-surface/80 px-4 py-2 backdrop-blur-xl shadow-[0_8px_32px_color-mix(in_srgb,var(--accent)_15%,transparent)] supports-[backdrop-filter]:bg-surface/60 transition-all duration-300 hover:border-accent/40 hover:shadow-[0_8px_40px_color-mix(in_srgb,var(--amber)_25%,transparent)] overflow-hidden">
+    <motion.div 
+      className="absolute bottom-0 left-0 h-[2px] w-full bg-gradient-to-r from-amber-400 via-emerald-400 to-cyan-400 origin-left"
+      style={{ scaleX }}
+    />
+    <Container className="relative flex items-center justify-between gap-3 px-2 sm:px-4 z-10">
       <Link href={`/${locale}`} className="group inline-flex min-h-11 items-center gap-3 rounded-sm text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-label={`${siteConfig.name} — ${dictionary.nav.home}`}>
         <span className="grid size-9 place-items-center border border-border-strong bg-surface text-xs font-bold tracking-[.12em] text-accent transition-all duration-300 group-hover:-rotate-3 group-hover:bg-accent group-hover:text-text-on-accent group-hover:shadow-[0_0_15px_color-mix(in_srgb,var(--accent)_60%,transparent)]">Z</span>
         <span className="hidden text-sm font-semibold tracking-tight transition-colors group-hover:text-accent sm:block">{siteConfig.name}</span>
