@@ -20,8 +20,9 @@ export default async function SettingsPage() {
 
   const savedLinks = (linksData?.value as Record<string, string>) || {};
   const currentEmail = savedLinks.email || siteConfig.links.email.replace("mailto:", "");
-  const currentGithub = savedLinks.github || siteConfig.links.github;
+
   const currentLinkedin = savedLinks.linkedin || siteConfig.links.linkedin;
+  const currentCvMediaId = savedLinks.cv_media_id || "";
 
   return (
     <div className="max-w-3xl w-full mx-auto animate-in fade-in duration-500">
@@ -39,8 +40,9 @@ export default async function SettingsPage() {
         <h2 className="font-display text-lg font-semibold text-text-primary mb-6">Liens de Contact</h2>
         <ContactLinksForm 
           currentEmail={currentEmail} 
-          currentGithub={currentGithub} 
+
           currentLinkedin={currentLinkedin} 
+          currentCvMediaId={currentCvMediaId}
         />
       </div>
 

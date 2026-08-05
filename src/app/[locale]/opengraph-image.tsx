@@ -8,7 +8,7 @@ export default function OpenGraphImage() {
   return new ImageResponse(
     <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", background: "#121416", color: "#e2e2e5", padding: "72px", fontFamily: "Arial, sans-serif" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "18px", color: "#00e5ff", fontSize: 28, fontWeight: 700 }}>
-        <div style={{ display: "flex", width: 56, height: 56, borderRadius: 4, alignItems: "center", justifyContent: "center", background: "#00e5ff", color: "#00363d", fontSize: 22 }}>AN</div>
+        <div style={{ display: "flex", width: 56, height: 56, borderRadius: 4, alignItems: "center", justifyContent: "center", background: "#00e5ff", color: "#00363d", fontSize: 22 }}>Z</div>
         PORTFOLIO
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>

@@ -10,6 +10,8 @@ import LocaleDocumentAttributes from "@/components/layout/LocaleDocumentAttribut
 import { getSiteUrl, siteConfig } from "@/config/site";
 import { getPublicContactLinks } from "@/features/portfolio/data";
 import { PageLoadWrapper } from "@/components/ui/PageLoadWrapper";
+import SolarCursor from "@/components/energy/SolarCursor";
+import AuroraBackground from "@/components/energy/AuroraBackground";
 
 type LocaleLayoutProps = {
   children: ReactNode;
@@ -85,12 +87,14 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   return (
     <PageLoadWrapper>
+      <AuroraBackground />
+      <SolarCursor />
       <div className="flex min-h-screen flex-col">
         <LocaleDocumentAttributes locale={candidate} />
         <a href="#main-content" className="skip-link">
           {dictionary.skipToContent}
         </a>
-        <SiteHeader locale={candidate} dictionary={dictionary} resumeLink={contactLinks.resume} />
+        <SiteHeader locale={candidate} dictionary={dictionary} resumeLink={`/${candidate}/cv`} hasCv={Boolean((contactLinks as Record<string, unknown>).cvMediaId)} />
         <PrivacyAnalytics locale={candidate} />
         <main id="main-content" className="flex-1" tabIndex={-1}>
           {children}

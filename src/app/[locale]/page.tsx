@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { ArrowRight, Award, BriefcaseBusiness, FileText, GraduationCap, Quote, Wrench } from "lucide-react";
 import EnergyHeroVisual from "@/components/energy/EnergyHeroVisual";
-import EnergyThread from "@/components/energy/EnergyThread";
 import ProjectSummaryCard from "@/components/projects/ProjectSummaryCard";
 import TestimonialForm from "@/components/testimonials/TestimonialForm";
 import ButtonLink from "@/components/ui/ButtonLink";
@@ -32,6 +31,12 @@ export async function generateMetadata({ params }: HomePageProps): Promise<Metad
   return createPageMetadata({ locale, title: copy.eyebrow, description: copy.introduction });
 }
 
+import SmartGrid from "@/components/energy/SmartGrid";
+import ScadaGauge from "@/components/energy/ScadaGauge";
+import BatteryMeter from "@/components/energy/BatteryMeter";
+import TurbineWatermark from "@/components/energy/TurbineWatermark";
+import CvButton from "@/components/ui/CvButton";
+
 export default async function HomePage({ params }: HomePageProps) {
   const { locale: localeParam } = await params;
   const locale = isLocale(localeParam) ? localeParam : "fr";
@@ -46,7 +51,7 @@ export default async function HomePage({ params }: HomePageProps) {
     getPublicContactLinks(),
   ]);
   const featuredProjects = (projects.some((project) => project.featured) ? projects.filter((project) => project.featured) : projects).slice(0, 3);
-  const allTechnologies = Array.from(new Set(projects.flatMap((project) => project.coreTechnologies || project.technologies || []))).filter(Boolean);
+  const allTechnologies = Array.from(new Set(projects.flatMap((project) => project.coreTechnologies || []))).filter(Boolean);
   const displayTechnologies = allTechnologies.slice(0, 12);
   const displayCertifications = (certifications.some((certification) => certification.featured) ? certifications.filter((certification) => certification.featured) : certifications).slice(0, 3);
   const displayTestimonials = (testimonials.some((testimonial) => testimonial.featured) ? testimonials.filter((testimonial) => testimonial.featured) : testimonials).slice(0, 3);
@@ -62,14 +67,14 @@ export default async function HomePage({ params }: HomePageProps) {
       <JsonLd data={{
         "@context": "https://schema.org",
         "@graph": [
-          { "@type": "Person", "@id": new URL("/#person", getSiteUrl()).toString(), name: siteConfig.name, url: new URL(`/${locale}`, getSiteUrl()).toString(), homeLocation: siteConfig.location[locale], sameAs: [contactLinks.github, contactLinks.linkedin, contactLinks.tryHackMe], alumniOf: { "@type": "CollegeOrUniversity", name: "Université Privée de Fès" } },
+          { "@type": "Person", "@id": new URL("/#person", getSiteUrl()).toString(), name: siteConfig.name, url: new URL(`/${locale}`, getSiteUrl()).toString(), homeLocation: siteConfig.location[locale], sameAs: [contactLinks.linkedin, ("tryHackMe" in contactLinks ? (contactLinks as Record<string, string>).tryHackMe : undefined)].filter(Boolean), alumniOf: { "@type": "CollegeOrUniversity", name: "Université Privée de Fès" } },
           { "@type": "WebSite", name: `${siteConfig.name} — Portfolio`, url: getSiteUrl().toString(), inLanguage: locale, author: { "@id": new URL("/#person", getSiteUrl()).toString() } },
         ],
       }} />
 
       <div className="energy-journey relative">
-      <EnergyThread />
       <section id="home" className="relative overflow-hidden border-b border-border py-12 sm:py-16 lg:py-20">
+        <SmartGrid />
         <Container>
           <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,.88fr)_minmax(30rem,1.12fr)] lg:gap-12">
             <ScrollReveal yOffset={18} className="order-2 lg:order-1">
@@ -82,7 +87,9 @@ export default async function HomePage({ params }: HomePageProps) {
                 <p className="mt-5 max-w-xl text-pretty text-base leading-7 text-text-secondary sm:text-lg">{copy.introduction}</p>
                 <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                   <ButtonLink href={`/${locale}/contact`}>{copy.contactCta}<ArrowRight aria-hidden="true" className="size-4" /></ButtonLink>
-                  <ButtonLink href={contactLinks.resume} target="_blank" rel="noreferrer" variant="secondary" data-analytics-event="cv_open"><FileText aria-hidden="true" className="size-4" />{copy.resumeCta}</ButtonLink>
+                  <CvButton hasCv={Boolean((contactLinks as Record<string, unknown>).cvMediaId)} locale={locale} href={`/${locale}/cv`} className="button-secondary">
+                    <FileText aria-hidden="true" className="size-4" />{copy.resumeCta}
+                  </CvButton>
                 </div>
                 <dl className="mt-10 grid border-y border-border sm:grid-cols-3">
                   {copy.proofItems.map(([term, description]) => (
@@ -116,15 +123,16 @@ export default async function HomePage({ params }: HomePageProps) {
       </section>
 
       {portfolioIndicators.length > 0 ? (
-        <section aria-label={locale === "fr" ? "Indicateurs du portfolio" : "Portfolio indicators"} className="relative border-b border-border bg-surface-deep/45">
+        <section aria-label={locale === "fr" ? "Indicateurs du portfolio" : "Portfolio indicators"} className="relative border-b border-border bg-surface-deep/20 py-10">
           <Container>
-            <dl className="grid sm:grid-cols-3">
+            <dl className="grid gap-8 sm:grid-cols-3 sm:gap-0">
               {portfolioIndicators.map((indicator, index) => (
-                <div key={indicator.label} className="relative grid grid-cols-[auto_1fr] items-center gap-4 border-b border-border py-6 last:border-b-0 sm:border-b-0 sm:border-r sm:px-6 sm:first:pl-0 sm:last:border-r-0">
-                  <dd className="font-display text-4xl font-semibold tabular-nums text-text-primary">{String(indicator.value).padStart(2, "0")}</dd>
-                  <dt className="font-mono text-[.62rem] font-semibold uppercase tracking-[.11em] text-text-muted">{indicator.label}<span aria-hidden="true" className="mt-2 block h-px w-full bg-gradient-to-r from-accent to-transparent" /></dt>
-                  <span aria-hidden="true" className="absolute right-2 top-2 font-mono text-[.5rem] text-accent/70">M-{String(index + 1).padStart(2, "0")}</span>
-                </div>
+                <ScadaGauge 
+                  key={indicator.label} 
+                  value={indicator.value} 
+                  label={indicator.label} 
+                  index={String(index + 1).padStart(2, "0")} 
+                />
               ))}
             </dl>
           </Container>
@@ -143,10 +151,13 @@ export default async function HomePage({ params }: HomePageProps) {
                 </div>
                 <ol className="grid border-t border-border sm:grid-cols-2">
                   {displayTechnologies.map((technology, index) => (
-                    <li key={technology} className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-3 border-b border-border px-1 py-4 sm:odd:border-r sm:odd:pr-5 sm:even:pl-5">
+                    <li key={technology} className="grid grid-cols-[2.5rem_1fr_auto] items-center gap-4 border-b border-border px-1 py-4 sm:odd:border-r sm:odd:pr-5 sm:even:pl-5">
                       <span className="font-mono text-[.62rem] text-text-muted">{String(index + 1).padStart(2, "0")}</span>
                       <span className="text-sm font-semibold text-text-primary">{technology}</span>
-                      <SkillIcon name={technology} className="text-[22px]" />
+                      <div className="flex items-center gap-3">
+                        <SkillIcon name={technology} className="text-[20px]" />
+                        <BatteryMeter />
+                      </div>
                     </li>
                   ))}
                 </ol>
@@ -156,8 +167,9 @@ export default async function HomePage({ params }: HomePageProps) {
         </section>
       ) : null}
 
-      <section id="projects" className="energy-section py-16 sm:py-24">
-        <Container>
+      <section id="projects" className="energy-section relative overflow-hidden py-16 sm:py-24">
+        <TurbineWatermark className="left-[-15%] top-[10%] h-[800px] w-[800px] text-text-primary" />
+        <Container className="relative z-10">
           <ScrollReveal yOffset={28}>
             <div className="flex flex-col gap-7 md:flex-row md:items-end md:justify-between">
               <SectionHeading eyebrow={copy.projectsEyebrow} title={copy.projectsTitle} description={copy.projectsDescription} />
@@ -168,8 +180,9 @@ export default async function HomePage({ params }: HomePageProps) {
         </Container>
       </section>
 
-      <section id="journey" className="energy-section py-16 sm:py-24">
-        <Container>
+      <section id="journey" className="energy-section relative overflow-hidden py-16 sm:py-24">
+        <TurbineWatermark className="right-[-10%] top-[20%] h-[900px] w-[900px] text-accent" />
+        <Container className="relative z-10">
           <ScrollReveal yOffset={28}>
             <div className="flex flex-col gap-7 md:flex-row md:items-end md:justify-between">
               <SectionHeading eyebrow={publicCopy[locale].journey.eyebrow} title={publicCopy[locale].journey.title} description={publicCopy[locale].journey.description} />

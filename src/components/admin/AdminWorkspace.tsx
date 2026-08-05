@@ -17,7 +17,7 @@ const labels: Record<AdminWorkspaceSection, { title: string; description: string
 };
 
 function emptyValues(section: AdminWorkspaceSection): RecordValue {
-  if (section === "projects") return { title: "", subtitle_fr: "", subtitle_en: "", description_fr: "", description_en: "", problem_fr: "", problem_en: "", solution_fr: "", solution_en: "", objectives_fr: "", objectives_en: "", architecture_fr: "", architecture_en: "", results_fr: "", results_en: "", github_url: "", demo_url: "", categories: "", technologies: "", sort_order: 0, featured: 0 };
+  if (section === "projects") return { title: "", subtitle_fr: "", subtitle_en: "", description_fr: "", description_en: "", problem_fr: "", problem_en: "", solution_fr: "", solution_en: "", objectives_fr: "", objectives_en: "", architecture_fr: "", architecture_en: "", results_fr: "", results_en: "", featured: 0 };
   if (section === "journey") return { kind: "experience", title_fr: "", title_en: "", organization: "", summary_fr: "", summary_en: "", started_on: "", ended_on: "", sort_order: 0 };
   if (section === "certifications") return { title: "", issuer: "", issued_on: "", description_fr: "", description_en: "", document_media_id: "" };
   return {};
@@ -151,7 +151,7 @@ export function AdminWorkspace({ section }: { section: AdminWorkspaceSection }) 
 
 function WorkspaceTable({ section, records, onEdit, onView, onDelete, onModerate, onToggleFeatured }: { section: AdminWorkspaceSection; records: RecordValue[]; onEdit: (record: RecordValue) => void; onView: (record: RecordValue) => void; onDelete: (record: RecordValue) => void; onModerate: (record: RecordValue, status: "approved" | "rejected") => void; onToggleFeatured?: (record: RecordValue) => void }) {
   if (!records.length) return <div className="mt-8 border border-dashed border-border bg-surface/60 p-10 text-center text-sm text-text-muted">Aucun contenu pour le moment. Utilisez l’action d’ajout pour commencer.</div>;
-  const headers = section === "projects" ? ["Titre", "GitHub", "Technologies", "Ordre"]
+  const headers = section === "projects" ? ["Titre", "Statut", "Date"]
     : section === "journey" ? ["Type", "Titre", "Organisation", "Début"]
       : section === "certifications" ? ["Titre", "Organisme", "Date", "PDF"]
         : section === "testimonials" ? ["Nom", "Rôle", "Date", "Statut"]
@@ -162,7 +162,7 @@ function WorkspaceTable({ section, records, onEdit, onView, onDelete, onModerate
 function Cells({ section, record }: { section: AdminWorkspaceSection; record: RecordValue }) {
   const isUnread = section === "messages" && record.status === "new";
   const cell = (value: unknown) => <td className={`max-w-64 px-4 py-3 ${isUnread ? "text-text-primary font-semibold" : "text-text-secondary"}`}><span className="line-clamp-3">{Array.isArray(value) ? value.join(", ") : String(value || "—")}</span></td>;
-  if (section === "projects") return <>{cell(record.title)}{cell(record.github_url)}{cell(record.technologies)}{cell(record.sort_order)}</>;
+  if (section === "projects") return <>{cell(record.title)}</>;
   if (section === "journey") return <>{cell(record.kind === "experience" ? "Expérience" : "Formation")}{cell(record.title_fr)}{cell(record.organization)}{cell(record.started_on)}</>;
   if (section === "certifications") return <>{cell(record.title)}{cell(record.issuer)}{cell(record.issued_on)}{cell(record.document_media_id ? "Ajouté" : "—")}</>;
   if (section === "testimonials") return <>{cell(`${record.first_name ?? ""} ${record.last_name ?? ""}`.trim())}{cell(record.job_title ?? record.organization)}{cell(formatDate(record.created_at))}{cell(record.status)}</>;
@@ -173,7 +173,6 @@ function WorkspaceEditor({ section, record, onClose, onSaved }: { section: Exclu
   const [values, setValues] = useState<RecordValue>(() => record ? fromRecord(section, record) : emptyValues(section));
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const [translating, setTranslating] = useState<string | null>(null);
   const [pdf, setPdf] = useState<File | null>(null);
   const pdfRef = useRef<HTMLInputElement>(null);
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
@@ -181,42 +180,7 @@ function WorkspaceEditor({ section, record, onClose, onSaved }: { section: Exclu
   const { dialogRef, close } = useModalDialog(onClose);
   const set = (key: string, value: string | number) => setValues((current) => ({ ...current, [key]: value }));
 
-  async function translate() {
-    setError(null);
-    try {
-      const frKeys = Object.keys(values).filter(k => k.endsWith("_fr") && typeof values[k] === "string" && (values[k] as string).trim() !== "");
-      if (frKeys.length === 0) {
-        setError("Saisissez d'abord du texte en français.");
-        return;
-      }
-      
-      for (const frKey of frKeys) {
-        const enKey = frKey.replace("_fr", "_en");
-        const source = (values[frKey] as string).trim();
-        
-        // Optionally skip if English field already has content, but usually we want to force translate if user clicks the button.
-        setTranslating(enKey);
-        
-        const result = await fetch("/api/admin/translate", { 
-          method: "POST", 
-          headers: { "Content-Type": "application/json", Accept: "application/json" }, 
-          body: JSON.stringify({ text: source }) 
-        });
-        
-        const body = await result.json() as { translation?: string; error?: string };
-        if (!result.ok || !body.translation) {
-          console.error(`Traduction échouée pour ${frKey}:`, body.error);
-          continue; // Continue to the next field even if one fails
-        }
-        
-        set(enKey, body.translation);
-      }
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Traduction impossible.");
-    } finally {
-      setTranslating(null);
-    }
-  }
+
 
   async function uploadPdf() {
     if (!pdf) return typeof values.document_media_id === "string" ? values.document_media_id : "";
@@ -274,7 +238,7 @@ function WorkspaceEditor({ section, record, onClose, onSaved }: { section: Exclu
     <dialog ref={dialogRef} onCancel={(event) => { event.preventDefault(); close(); }} className="m-auto max-h-[92vh] w-[min(52rem,calc(100%-2rem))] overflow-y-auto rounded-md border border-border bg-surface-raised p-0 text-text-secondary shadow-2xl">
       <div className="flex items-start justify-between gap-5 border-b border-border px-5 py-4 sm:px-7"><div><p className="system-label">{record ? "Modification" : "Nouveau contenu"}</p><h2 className="mt-1 text-xl font-semibold">{record ? "Modifier" : "Ajouter"}</h2></div><button type="button" className="grid size-11 place-items-center rounded-sm border border-border" onClick={close} aria-label="Fermer"><X className="size-5" /></button></div>
       <form onSubmit={submit} className="grid gap-5 p-5 sm:grid-cols-2 sm:p-7">
-        <EditorFields section={section} values={values} set={set} translate={translate} translating={translating} pdfRef={pdfRef} pdf={pdf} setPdf={setPdf} galleryRef={galleryRef} galleryFiles={galleryFiles} setGalleryFiles={setGalleryFiles} />
+        <EditorFields section={section} values={values} set={set} pdfRef={pdfRef} pdf={pdf} setPdf={setPdf} galleryRef={galleryRef} galleryFiles={galleryFiles} setGalleryFiles={setGalleryFiles} />
         {error ? <p className="rounded-sm border border-danger/30 bg-danger/10 p-4 text-sm text-danger sm:col-span-2" role="alert">{error}</p> : null}
         <div className="flex flex-wrap justify-end gap-3 border-t border-border pt-5 sm:col-span-2">
           <button type="button" className="button-secondary" onClick={close}>Annuler</button>
@@ -285,11 +249,11 @@ function WorkspaceEditor({ section, record, onClose, onSaved }: { section: Exclu
   );
 }
 
-function EditorFields({ section, values, set, translate, translating, pdfRef, pdf, setPdf, galleryRef, galleryFiles, setGalleryFiles }: { section: Exclude<AdminWorkspaceSection, "testimonials" | "messages">; values: RecordValue; set: (key: string, value: string | number) => void; translate: () => Promise<void>; translating: string | null; pdfRef: React.RefObject<HTMLInputElement | null>; pdf: File | null; setPdf: (file: File | null) => void; galleryRef?: React.RefObject<HTMLInputElement | null>; galleryFiles?: File[]; setGalleryFiles?: (files: File[]) => void }) {
+function EditorFields({ section, values, set, pdfRef, pdf, setPdf, galleryRef, galleryFiles, setGalleryFiles }: { section: Exclude<AdminWorkspaceSection, "testimonials" | "messages">; values: RecordValue; set: (key: string, value: string | number) => void; pdfRef: React.RefObject<HTMLInputElement | null>; pdf: File | null; setPdf: (file: File | null) => void; galleryRef?: React.RefObject<HTMLInputElement | null>; galleryFiles?: File[]; setGalleryFiles?: (files: File[]) => void }) {
   const field = (name: string, label: string, type: "text" | "date" | "number" = "text", wide = false, required = true) => <label className={`grid gap-2 text-sm font-semibold text-text-primary ${wide ? "sm:col-span-2" : ""}`}><span>{label}{required ? <span className="text-danger"> *</span> : null}</span><input required={required} type={type} value={String(values[name] ?? "")} onChange={(event) => set(name, type === "number" ? Number(event.target.value) : event.target.value)} className="min-h-11 px-3 font-normal" /></label>;
   const checkbox = (name: string, label: string) => <label className="flex items-center gap-2 text-sm font-semibold text-text-primary sm:col-span-2"><input type="checkbox" checked={Boolean(values[name])} onChange={(event) => set(name, event.target.checked ? 1 : 0)} className="size-4 rounded-sm border-border text-accent focus:ring-accent" />{label}</label>;
-  const textarea = (name: string, label: string, translatable = false, required = true) => <label className="grid gap-2 text-sm font-semibold text-text-primary sm:col-span-2"><span className="flex flex-wrap items-center justify-between gap-3">{label}{translatable ? <button className="button-secondary px-3 py-2 text-xs" type="button" onClick={() => void translate()} disabled={Boolean(translating)}>{translating ? "Traduction en cours…" : "Traduire TOUT en anglais avec Groq"}</button> : null}</span><textarea required={required} value={String(values[name] ?? "")} onChange={(event) => set(name, event.target.value)} rows={5} className="resize-y px-3 py-2 font-normal" /></label>;
-  if (section === "projects") return <>{field("title", "Titre", "text", true)}{field("subtitle_fr", "Sous-titre FR", "text", true, false)}{field("subtitle_en", "Sous-titre EN", "text", true, false)}{textarea("description_fr", "Résumé court FR", true)}{textarea("description_en", "Résumé court EN", false, false)}{textarea("problem_fr", "Le Problème FR", false, false)}{textarea("problem_en", "Le Problème EN", false, false)}{textarea("objectives_fr", "Objectifs FR (un par ligne)", false, false)}{textarea("objectives_en", "Objectifs EN (un par ligne)", false, false)}{textarea("solution_fr", "La Solution FR", false, false)}{textarea("solution_en", "La Solution EN", false, false)}{textarea("architecture_fr", "Architecture FR (une par ligne)", false, false)}{textarea("architecture_en", "Architecture EN (une par ligne)", false, false)}{textarea("results_fr", "Résultats FR (un par ligne)", false, false)}{textarea("results_en", "Résultats EN (un par ligne)", false, false)}{field("categories", "Catégories (software, cybersecurity, artificial-intelligence, embedded - séparées par des virgules)", "text", true, false)}{field("technologies", "Technologies (séparées par des virgules)", "text", true, false)}{field("github_url", "Lien GitHub", "text", true, false)}{field("demo_url", "Lien Démo (URL)", "text", true, false)}{field("sort_order", "Ordre d’affichage", "number")}{checkbox("featured", "Mettre en avant sur la page d'accueil")}<div className="grid gap-2 text-sm font-semibold text-text-primary sm:col-span-2"><span>Galerie d&apos;images</span><input ref={galleryRef} type="file" multiple accept="image/*" onChange={(event: ChangeEvent<HTMLInputElement>) => setGalleryFiles?.(Array.from(event.target.files ?? []))} className="sr-only" /><button type="button" className="button-secondary w-fit" onClick={() => galleryRef?.current?.click()}><FileUp className="size-4" />{galleryFiles?.length ? `${galleryFiles.length} image(s) sélectionnée(s)` : "Ajouter des images"}</button><span className="text-xs font-normal text-text-muted">Ces images seront ajoutées à la galerie du projet (5 Mo max par image).</span></div></>;
+  const textarea = (name: string, label: string, required = true) => <label className="grid gap-2 text-sm font-semibold text-text-primary sm:col-span-2"><span className="flex flex-wrap items-center justify-between gap-3">{label}</span><textarea required={required} value={String(values[name] ?? "")} onChange={(event) => set(name, event.target.value)} rows={5} className="resize-y px-3 py-2 font-normal" /></label>;
+  if (section === "projects") return <>{field("title", "Titre", "text", true)}{field("subtitle_fr", "Sous-titre FR", "text", true, false)}{field("subtitle_en", "Sous-titre EN", "text", true, false)}{textarea("description_fr", "Résumé court FR")}{textarea("description_en", "Résumé court EN", false)}{textarea("problem_fr", "Le Problème FR", false)}{textarea("problem_en", "Le Problème EN", false)}{textarea("objectives_fr", "Objectifs FR (un par ligne)", false)}{textarea("objectives_en", "Objectifs EN (un par ligne)", false)}{textarea("solution_fr", "La Solution FR", false)}{textarea("solution_en", "La Solution EN", false)}{textarea("architecture_fr", "Architecture FR (une par ligne)", false)}{textarea("architecture_en", "Architecture EN (une par ligne)", false)}{textarea("results_fr", "Résultats FR (un par ligne)", false)}{textarea("results_en", "Résultats EN (un par ligne)", false)}{checkbox("featured", "Mettre en avant sur la page d'accueil")}<div className="grid gap-2 text-sm font-semibold text-text-primary sm:col-span-2"><span>Galerie d&apos;images</span><input ref={galleryRef} type="file" multiple accept="image/*" onChange={(event: ChangeEvent<HTMLInputElement>) => setGalleryFiles?.(Array.from(event.target.files ?? []))} className="sr-only" /><button type="button" className="button-secondary w-fit" onClick={() => galleryRef?.current?.click()}><FileUp className="size-4" />{galleryFiles?.length ? `${galleryFiles.length} image(s) sélectionnée(s)` : "Ajouter des images"}</button><span className="text-xs font-normal text-text-muted">Ces images seront ajoutées à la galerie du projet (5 Mo max par image).</span></div></>;
   if (section === "journey") return <><label className="grid gap-2 text-sm font-semibold text-text-primary"><span>Type *</span><select value={String(values.kind)} onChange={(event) => set("kind", event.target.value)} className="min-h-11 px-3 font-normal"><option value="experience">Expérience</option><option value="education">Formation</option></select></label>{field("organization", values.kind === "education" ? "Établissement" : "Organisation")}{field("title_fr", "Titre FR", "text", true)}{field("title_en", "Titre EN", "text", true)}{textarea("summary_fr", "Description FR")}{textarea("summary_en", "Description EN")}{field("started_on", "Date de début", "date")}
   <div className="grid gap-2 text-sm font-semibold text-text-primary">
     <span>Date de fin prévue ou effective</span>
@@ -297,7 +261,7 @@ function EditorFields({ section, values, set, translate, translating, pdfRef, pd
     <span className="text-xs font-normal text-text-muted">Si la date est vide ou dans le futur, le parcours s’affiche « En cours ». Il passera automatiquement à la date de fin une fois atteinte.</span>
   </div>
   {field("sort_order", "Ordre d’affichage", "number")}</>;
-  return <>{field("title", "Titre", "text", true)}{field("issuer", "Organisme", "text", true, false)}{field("issued_on", "Date", "date")}{textarea("description_fr", "Description FR", true)}{textarea("description_en", "Description EN", false, false)}{checkbox("featured", "Mettre en avant sur la page d'accueil")}<div className="grid gap-2 text-sm font-semibold text-text-primary sm:col-span-2"><span>Fichier PDF</span><input ref={pdfRef} type="file" accept="application/pdf" onChange={(event: ChangeEvent<HTMLInputElement>) => setPdf(event.target.files?.[0] ?? null)} className="sr-only" /><button type="button" className="button-secondary w-fit" onClick={() => pdfRef.current?.click()}><FileUp className="size-4" />{pdf ? pdf.name : values.document_media_id ? "Remplacer le PDF" : "Ajouter un PDF"}</button><span className="text-xs font-normal text-text-muted">PDF uniquement, 5 Mo maximum.</span></div></>;
+  return <>{field("title", "Titre", "text", true)}{field("issuer", "Organisme", "text", true, false)}{field("issued_on", "Date", "date")}{textarea("description_fr", "Description FR")}{textarea("description_en", "Description EN", false)}{checkbox("featured", "Mettre en avant sur la page d'accueil")}<div className="grid gap-2 text-sm font-semibold text-text-primary sm:col-span-2"><span>Fichier PDF</span><input ref={pdfRef} type="file" accept="application/pdf" onChange={(event: ChangeEvent<HTMLInputElement>) => setPdf(event.target.files?.[0] ?? null)} className="sr-only" /><button type="button" className="button-secondary w-fit" onClick={() => pdfRef.current?.click()}><FileUp className="size-4" />{pdf ? pdf.name : values.document_media_id ? "Remplacer le PDF" : "Ajouter un PDF"}</button><span className="text-xs font-normal text-text-muted">PDF uniquement, 5 Mo maximum.</span></div></>;
 }
 
 function DetailDialog({ section, record, onClose }: { section: AdminWorkspaceSection; record: RecordValue; onClose: () => void }) {
@@ -316,7 +280,7 @@ function DetailDialog({ section, record, onClose }: { section: AdminWorkspaceSec
       break;
     case "projects":
       title = "Projet";
-      entries = [["Titre", record.title], ["GitHub", record.github_url], ["Technologies", Array.isArray(record.technologies) ? record.technologies.join(", ") : record.technologies], ["Statut", record.publication_status], ["Date", formatDate(record.created_at)]];
+      entries = [["Titre", record.title], ["Statut", record.publication_status], ["Date", formatDate(record.created_at)]];
       break;
     case "journey":
       title = "Parcours";
@@ -346,7 +310,7 @@ function TestimonialsWorkspace({ records, onView, onDelete, onModerate, onToggle
     <div className="mt-8 flex flex-col gap-12">
       <section>
         <h3 className="font-display text-xl font-semibold text-text-primary">En attente ({pending.length})</h3>
-        <p className="mt-1 text-sm text-text-secondary">Les nouveaux avis qui attendent votre modération. En les approuvant, ils seront automatiquement traduits.</p>
+        <p className="mt-1 text-sm text-text-secondary">Les nouveaux avis qui attendent votre modération.</p>
         <WorkspaceTable section="testimonials" records={pending} onEdit={() => {}} onView={onView} onDelete={onDelete} onModerate={onModerate} onToggleFeatured={onToggleFeatured} />
       </section>
       <section>

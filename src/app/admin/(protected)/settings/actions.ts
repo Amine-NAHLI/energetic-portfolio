@@ -33,8 +33,8 @@ export async function saveContactLinks(prevState: unknown, formData: FormData) {
   const supabase = await createClient();
   const data = {
     email: formData.get("email")?.toString().trim() || "",
-    github: formData.get("github")?.toString().trim() || "",
     linkedin: formData.get("linkedin")?.toString().trim() || "",
+    cv_media_id: formData.get("cv_media_id")?.toString().trim() || "",
   };
 
   const { error } = await supabase.from("site_settings").upsert(

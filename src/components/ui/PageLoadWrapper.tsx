@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { GlobalLoader } from "./GlobalLoader";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 
 export function PageLoadWrapper({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
-  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     // If the document is already fully loaded

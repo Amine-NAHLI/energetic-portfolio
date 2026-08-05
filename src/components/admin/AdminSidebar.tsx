@@ -35,7 +35,7 @@ export function AdminSidebar() {
     <>
       <div className="p-6 flex items-center gap-4 border-b border-border/50">
         <div className="w-10 h-10 bg-surface flex items-center justify-center font-display text-text-primary text-xl font-bold border border-border">
-          AN
+          Z
         </div>
         <div className="flex flex-col">
           <span className="font-display text-text-primary leading-none tracking-tight">Zouhour Bougriane</span>

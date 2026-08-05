@@ -24,7 +24,7 @@ export default async function SearchPage({ params }: SearchPageProps) {
   if (!isLocale(locale)) notFound();
   const [projects, certifications, timelineEntries] = await Promise.all([getPublishedProjects(locale), getPublicCertifications(locale), getPublicJourney(locale)]);
   const entries: PublicSearchEntry[] = [
-    ...projects.map((project) => ({ id: project.slug, type: "project" as const, title: project.title, description: project.summary[locale], href: `/${locale}/projects/${project.slug}`, keywords: [...project.technologies, ...project.categories] })),
+    ...projects.map((project) => ({ id: project.slug, type: "project" as const, title: project.title, description: project.summary[locale], href: `/${locale}/projects/${project.slug}`, keywords: [...(project.coreTechnologies || [])] })),
     ...certifications.map((certificate) => ({ id: certificate.id, type: "certification" as const, title: certificate.name, description: certificate.issuer ?? certificate.skills.join(" · "), href: `/${locale}/certifications`, keywords: certificate.skills })),
     ...timelineEntries.map((entry) => ({ id: entry.id, type: "journey" as const, title: entry.title, description: entry.description, href: `/${locale}/journey`, keywords: [entry.eventDate] })),
   ];

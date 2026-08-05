@@ -24,53 +24,6 @@ function client(context: AdminContext): UntypedClient {
   return context.supabase as unknown as UntypedClient;
 }
 
-async function filterCoreTechnologies(technologies: string[]): Promise<string[]> {
-  if (!technologies.length) return [];
-  const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) return technologies; // fallback to all if no key
-
-  const systemPrompt = `You are a technical expert.
-I will give you a list of technologies. You must filter this list.
-Keep ONLY programming languages, major frameworks, and main dev tools (e.g., Python, React, Tailwind CSS, Docker, SQLite).
-Remove ALL specific libraries, modules, and minor packages (e.g., pandas, numpy, scikit-learn, psutil, joblib, random forest).
-
-Output strict JSON:
-{
-  "core": ["kept_tech1", "kept_tech2"]
-}`;
-
-  try {
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "llama-3.3-70b-versatile",
-        temperature: 0,
-        response_format: { type: "json_object" },
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Technologies: ${JSON.stringify(technologies)}` },
-        ],
-      }),
-      signal: AbortSignal.timeout(15_000),
-    });
-
-    if (response.ok) {
-      const payload = await response.json();
-      const content = payload.choices?.[0]?.message?.content;
-      if (content) {
-        const result = JSON.parse(content);
-        if (Array.isArray(result.core)) {
-          return result.core;
-        }
-      }
-    }
-  } catch (error) {
-    console.error("Groq core tech filtering failed:", error);
-  }
-  return technologies; // fallback
-}
-
 function text(value: unknown, min = 0, max = 5_000): string | null {
   if (typeof value !== "string") return null;
   const result = value.replace(/[\u0000-\u001F\u007F]/g, " ").trim();
@@ -123,11 +76,11 @@ function revalidate(section: Section) {
 async function getRecords(db: UntypedClient, section: Section) {
     if (section === "projects") {
       const [{ data: projects, error }, { data: translations }] = await Promise.all([
-        db.from("projects").select("id, github_url, demo_url, categories, sort_order, created_at, technologies, featured").order("sort_order").order("created_at", { ascending: false }),
+        db.from("projects").select("id, created_at, featured").order("created_at", { ascending: false }),
         db.from("project_translations").select("*"),
       ]);
       if (error) throw error;
-      return (projects ?? []).map((project: { id: string; github_url: string | null; demo_url: string | null; categories: string[]; sort_order: number; created_at: string; technologies: string[] }) => {
+      return (projects ?? []).map((project: { id: string; created_at: string; featured: boolean }) => {
         const values = (translations ?? []).filter((item: { project_id: string }) => item.project_id === project.id);
         const fr = values.find((item: { locale: string }) => item.locale === "fr");
         const en = values.find((item: { locale: string }) => item.locale === "en");
@@ -141,8 +94,6 @@ async function getRecords(db: UntypedClient, section: Section) {
           solution_fr: fr?.solution ?? "", solution_en: en?.solution ?? "",
           architecture_fr: Array.isArray(fr?.architecture) ? fr.architecture.join("\n") : "", architecture_en: Array.isArray(en?.architecture) ? en.architecture.join("\n") : "",
           results_fr: Array.isArray(fr?.results) ? fr.results.join("\n") : "", results_en: Array.isArray(en?.results) ? en.results.join("\n") : "",
-          categories: Array.isArray(project.categories) ? project.categories.join(", ") : "",
-          technologies: project.technologies ?? [] 
         };
       });
     }
@@ -234,39 +185,24 @@ async function saveProject(db: UntypedClient, context: AdminContext, id: string 
   const resultsFr = typeof input.results_fr === "string" ? input.results_fr.split('\n').map(s => s.trim()).filter(Boolean) : [];
   const resultsEn = typeof input.results_en === "string" ? input.results_en.split('\n').map(s => s.trim()).filter(Boolean) : [];
 
-  const githubUrl = nullableText(input.github_url, 500);
-  const demoUrl = nullableText(input.demo_url, 500);
-  const sortOrder = number(input.sort_order);
   if (!title) throw new ValidationError("Le titre est obligatoire.");
   if (!descriptionFr) throw new ValidationError("La description française est obligatoire.");
   if (input.description_en !== undefined && input.description_en !== null && input.description_en !== "" && !descriptionEn) {
     throw new ValidationError("La description anglaise est invalide.");
   }
-  if (githubUrl && !/^https:\/\/github\.com\//.test(githubUrl)) throw new ValidationError("Le lien GitHub est invalide.");
-  if (sortOrder === null) throw new ValidationError("L’ordre d’affichage doit être un nombre valide.");
-  if (!Array.isArray(input.technologies)) throw new ValidationError("Les technologies sont invalides.");
-  const technologies = [...new Set(input.technologies.map((value) => text(value, 1, 120)).filter((value): value is string => Boolean(value)))].slice(0, 30);
-  const coreTechnologies = await filterCoreTechnologies(technologies);
   
   const slug = await uniqueSlug(db, "projects", title, id ?? undefined);
   const featured = Boolean(input.featured);
-  
-  const categories = typeof input.categories === "string" ? input.categories.split(',').map(s => s.trim()).filter(Boolean) : [];
   
   // A project can only become public after both translations have been stored.
   // Create and update it as a draft first, then publish after the upsert below.
   const projectPayload = { 
     title, 
     slug, 
-    github_url: githubUrl, 
-    demo_url: demoUrl, 
-    sort_order: sortOrder, 
     source_kind: "personal", 
     publication_status: "draft", 
     featured, 
-    categories, 
-    technologies,
-    core_technologies: coreTechnologies,
+    core_technologies: [],
     updated_by: context.userId, 
     ...(id ? {} : { created_by: context.userId, published_at: null }) 
   };
@@ -321,7 +257,7 @@ async function saveProject(db: UntypedClient, context: AdminContext, id: string 
     }
   }
   
-  await audit(context, id ? "update" : "create", "projects", projectId, ["title", "description_fr", "description_en", "github_url", "technologies", "sort_order", "gallery"]);
+  await audit(context, id ? "update" : "create", "projects", projectId, ["title", "description_fr", "description_en", "gallery"]);
   return projectId;
 }
 

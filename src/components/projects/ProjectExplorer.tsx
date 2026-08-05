@@ -2,24 +2,24 @@
 
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
+import { publicCopy } from "@/content/copy";
 import ProjectSummaryCard from "@/components/projects/ProjectSummaryCard";
 import PortfolioEmptyState from "@/components/ui/PortfolioEmptyState";
-import { projectCategoryLabels, publicCopy } from "@/content/copy";
 import type { Locale } from "@/i18n/config";
-import type { PortfolioProject, ProjectCategory } from "@/types/content";
+import type { PortfolioProject } from "@/types/content";
 
 type ProjectExplorerProps = {
   locale: Locale;
   projects: PortfolioProject[];
 };
 
-type CategoryFilter = "all" | ProjectCategory;
+
 type SortMode = "featured" | "alphabetical";
 
 export default function ProjectExplorer({ locale, projects }: ProjectExplorerProps) {
   const copy = publicCopy[locale].projects;
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<CategoryFilter>("all");
+
   const [sort, setSort] = useState<SortMode>("featured");
 
   const visibleProjects = useMemo(() => {
@@ -27,24 +27,23 @@ export default function ProjectExplorer({ locale, projects }: ProjectExplorerPro
 
     return projects
       .filter((project) => {
-        const matchesCategory = category === "all" || project.categories.includes(category);
         const searchable = [
           project.title,
           project.subtitle[locale],
           project.summary[locale],
-          ...project.technologies,
+          ...(project.coreTechnologies ?? []),
         ].join(" ").toLocaleLowerCase(locale);
-        return matchesCategory && (!normalizedQuery || searchable.includes(normalizedQuery));
+        return (!normalizedQuery || searchable.includes(normalizedQuery));
       })
       .toSorted((first, second) => {
         if (sort === "alphabetical") return first.title.localeCompare(second.title, locale);
         return Number(second.featured) - Number(first.featured);
       });
-  }, [category, locale, projects, query, sort]);
+  }, [locale, projects, query, sort]);
 
   function resetFilters() {
     setQuery("");
-    setCategory("all");
+
     setSort("featured");
   }
 
@@ -54,7 +53,7 @@ export default function ProjectExplorer({ locale, projects }: ProjectExplorerPro
 
   return (
     <div>
-      <div className="engineering-surface grid gap-4 border-y border-border bg-surface-subtle p-5 sm:grid-cols-2 lg:grid-cols-[1fr_15rem_14rem] lg:p-6">
+      <div className="engineering-surface grid gap-4 border-y border-border bg-surface-subtle p-5 sm:grid-cols-2 lg:p-6">
         <label className="grid gap-2 text-sm font-medium text-text-primary">
           {copy.searchLabel}
           <span className="relative">
@@ -69,19 +68,6 @@ export default function ProjectExplorer({ locale, projects }: ProjectExplorerPro
           </span>
         </label>
 
-        <label className="grid gap-2 text-sm font-medium text-text-primary">
-          {copy.categoryLabel}
-          <select
-            value={category}
-            onChange={(event) => setCategory(event.target.value as CategoryFilter)}
-            className="min-h-12 px-3 text-sm"
-          >
-            <option value="all">{copy.allCategories}</option>
-            {(Object.keys(projectCategoryLabels) as ProjectCategory[]).map((value) => (
-              <option key={value} value={value}>{projectCategoryLabels[value][locale]}</option>
-            ))}
-          </select>
-        </label>
 
         <label className="grid gap-2 text-sm font-medium text-text-primary sm:col-span-2 lg:col-span-1">
           {copy.sortLabel}
